@@ -5,13 +5,17 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "buildCommand": "npm run build"
       }
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|json))$",
+      "dest": "/$1"
+    },
+    {
+      "src": "/.*",
       "dest": "/index.html"
     }
   ]

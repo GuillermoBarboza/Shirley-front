@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getStorage, ref, deleteObject } from "firebase/storage";
 import "firebase/storage";
 import styles from "./Artwork.module.css";
+import { EditableArtwork } from "../EditArtwork/EditArtwork";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -18,9 +19,15 @@ const firebaseConfig = {
 
 interface Artwork {
   _id: string;
-  title: string;
-  artist: string;
-  description: string;
+  title?: string;
+  artist?: string;
+  description?: string;
+  styles?: string[];
+  size: string;
+  price?: number;
+  year?: number;
+  available?: boolean;
+  coleccion?: string;
   url: string;
 }
 
@@ -29,11 +36,12 @@ const firebase = getStorage(app);
 
 const ArtworkList: React.FC = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [modalActive, setModalActive] = useState(false);
 
   useEffect(() => {
     // Fetch artworks from the backend API
     axios
-      .get<Artwork[]>("http://localhost:3001/artworks")
+      .get<Artwork[]>("http://localhost:3009/artworks")
       .then((response) => {
         setArtworks(response.data);
       })
@@ -59,7 +67,7 @@ const ArtworkList: React.FC = () => {
 
     // Send a delete request to the backend API
     axios
-      .delete(`http://localhost:3001/artworks/${id}`)
+      .delete(`http://localhost:3009/artworks/${id}`)
       .then((response) => {
         // Remove the deleted artwork from the state
         setArtworks(artworks.filter((artwork) => artwork._id !== id));
@@ -77,25 +85,23 @@ const ArtworkList: React.FC = () => {
           <li className={styles.artworkItem} key={artwork._id}>
             <img src={artwork.url} alt={artwork.title} />
             <div className={styles.artworkItemContent}>
-              <div className={styles.artworkItemTitle}>
-                <strong>Titulo:</strong>
-                <br />
-                {artwork.title}
-              </div>
-              {/*  <div className={styles.artworkItemArtist}>
-                <strong>Autor/a: </strong>
-                <br />
-                {artwork.artist}
-              </div> */}
-              <div className={styles.artworkItemDescription}>
-                <strong>Descripcion:</strong>
-
-                <br />
-                {artwork.description}
-              </div>
               <button onClick={() => handleDelete(artwork._id, artwork.url)}>
                 <strong>Borrar obra.</strong>
               </button>
+
+              <button
+                onClick={() => {
+                  setModalActive(true);
+                }}
+              >
+                Editar
+              </button>
+
+              <EditableArtwork
+                setIsActive={setModalActive}
+                artwork={artwork}
+                isActive={modalActive}
+              />
             </div>
           </li>
         ))}

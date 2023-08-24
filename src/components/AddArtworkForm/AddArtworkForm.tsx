@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  listAll,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import Styles from "./ArtworkForm.module.css";
 import { useNavigate } from "react-router";
 
@@ -31,6 +37,11 @@ const AddArtworkForm: React.FC = () => {
   const [available, setAvailable] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
+  const [coleccion, setCollection] = useState("");
+
+  const handleCollectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCollection(e.target.value);
+  };
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -86,6 +97,7 @@ const AddArtworkForm: React.FC = () => {
       url,
       available,
       description,
+      coleccion,
     };
     console.log(artworkData);
 
@@ -105,7 +117,7 @@ const AddArtworkForm: React.FC = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:3001/artworks/create",
+        "http://localhost:3009/artworks/create",
         artworkData
       );
 
@@ -124,6 +136,41 @@ const AddArtworkForm: React.FC = () => {
       navigate(0);
     } catch (error) {
       console.error("Error adding artwork:", error);
+    }
+  };
+
+  const handleBulkCreate = async () => {
+    try {
+      // Reference to the storage directory
+      const storageRef = ref(storage, "/shirley/mujeresquemehabitan");
+
+      // List all files in the directory
+      const res = await listAll(storageRef);
+
+      // For each file in the directory
+      res.items.forEach(async (itemRef) => {
+        try {
+          // Get the download URL
+          const url = await getDownloadURL(itemRef);
+
+          // Create artwork data
+          const artworkData = {
+            url,
+          };
+
+          // Make axios call to create an artwork
+          const response = await axios.post(
+            "http://localhost:3009/artworks/create",
+            artworkData
+          );
+
+          console.log("Artwork added successfully:", response.data);
+        } catch (error) {
+          console.error("Error adding artwork:", error);
+        }
+      });
+    } catch (error) {
+      console.error("Error listing files:", error);
     }
   };
 
@@ -158,6 +205,15 @@ const AddArtworkForm: React.FC = () => {
             type="text"
             value={styles.join(",")}
             onChange={handleStyleChange}
+          />
+        </label>
+        <br />
+        <label>
+          Colección:
+          <input
+            type="text"
+            value={coleccion}
+            onChange={handleCollectionChange}
           />
         </label>
         <br />
@@ -206,6 +262,7 @@ const AddArtworkForm: React.FC = () => {
         <button className={Styles.button} type="submit">
           Agregar Obra +
         </button>
+        <button onClick={handleBulkCreate}>bulk create</button>
       </form>
     </div>
   );

@@ -1,0 +1,44 @@
+.artworkListContainer {
+  padding: 10px;
+}
+
+.artworkListContainer ul {
+  padding: 0;
+}
+
+.artworkItem {
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.artworkItem img {
+  height: 250px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-right: 15px;
+}
+
+.artworkItemContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.artworkItemTitle {
+  margin-bottom: 10px;
+}
+
+.artworkItemArtist {
+  margin-bottom: 10px;
+}
+
+.artworkItemDescription {
+  margin-bottom: 10px;
+}

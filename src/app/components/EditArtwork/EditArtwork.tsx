@@ -1,8 +1,8 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useNavigate } from "react-router";
 
 import Styles from "./EditArtwork.module.css";
 
@@ -25,14 +25,14 @@ interface EditableArtworkProps {
 }
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_DATABASE_URL,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_APP_ID,
-  measurementId: process.env.REACT_APP_MEASUREMENT,
+  apiKey: process.env.NEXT_PUBLIC_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_MEASUREMENT,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -43,7 +43,6 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
   isActive,
   setIsActive,
 }) => {
-  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("Shirley Madero");
   const [styles, setStyles] = useState<string[]>([]);
@@ -66,6 +65,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
     artwork.url && setUrl(artwork.url);
     artwork.available && setAvailable(artwork.available);
     artwork.description && setDescription(artwork.description);
+    artwork.coleccion && setCollection(artwork.coleccion);
   }, [artwork]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +148,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
       }
 
       const response = await axios.put(
-        `http://localhost:3009/artworks/${artwork._id}`,
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/${artwork._id}`,
         artworkData
       );
 
@@ -171,14 +171,16 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
             >
               X
             </button>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className={Styles.form}>
               <label>
                 Titulo:
+                <br />
                 <input type="text" value={title} onChange={handleTitleChange} />
               </label>
               <br />
               <label>
                 Artista:
+                <br />
                 <input
                   type="text"
                   value={artist}
@@ -198,6 +200,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
               <br />
               <label>
                 Estilos (separados por coma ,):
+                <br />
                 <input
                   type="text"
                   value={styles}
@@ -207,11 +210,13 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
               <br />
               <label>
                 Tamaño:
+                <br />
                 <input type="text" value={size} onChange={handleSizeChange} />
               </label>
               <br />
               <label>
                 Precio:
+                <br />
                 <input
                   type="number"
                   value={price}
@@ -221,11 +226,13 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
               <br />
               <label>
                 Año:
+                <br />
                 <input type="number" value={year} onChange={handleYearChange} />
               </label>
               <br />
               <label>
-                Disponible:
+                Disponible?
+                <br />
                 <input
                   type="checkbox"
                   checked={available}
@@ -235,6 +242,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
               <br />
               <label>
                 Coleccion:
+                <br />
                 <input
                   type="text"
                   value={coleccion}
@@ -244,6 +252,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
               <br />
               <label>
                 Image:
+                <br />
                 <input
                   type="file"
                   accept="image/*"

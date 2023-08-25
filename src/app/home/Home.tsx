@@ -1,6 +1,6 @@
 import React from "react";
-import ArtworkList from "../../components/ArtworkList/ArtworkList";
-import AddArtworkForm from "../../components/AddArtworkForm/AddArtworkForm";
+import ArtworkList from "../components/ArtworkList/ArtworkList";
+import AddArtworkForm from "../components/AddArtworkForm/AddArtworkForm";
 import styles from "./Home.module.css";
 
 const Home: React.FC = () => {

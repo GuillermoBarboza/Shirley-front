@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
@@ -9,24 +10,22 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import Styles from "./ArtworkForm.module.css";
-import { useNavigate } from "react-router";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_DATABASE_URL,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_APP_ID,
-  measurementId: process.env.REACT_APP_MEASUREMENT,
+  apiKey: process.env.NEXT_PUBLIC_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_MEASUREMENT,
 };
 
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
 const AddArtworkForm: React.FC = () => {
-  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("Shirley Madero");
   const [styles, setStyles] = useState<string[]>([]);
@@ -117,7 +116,7 @@ const AddArtworkForm: React.FC = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:3009/artworks/create",
+        process.env.NEXT_PUBLIC_API_ENDPOINT + "/create",
         artworkData
       );
 
@@ -133,7 +132,6 @@ const AddArtworkForm: React.FC = () => {
       setAvailable(false);
       setImageFile(null);
       setDescription("");
-      navigate(0);
     } catch (error) {
       console.error("Error adding artwork:", error);
     }
@@ -160,7 +158,7 @@ const AddArtworkForm: React.FC = () => {
 
           // Make axios call to create an artwork
           const response = await axios.post(
-            "http://localhost:3009/artworks/create",
+            process.env.NEXT_PUBLIC_API_ENDPOINT + "create",
             artworkData
           );
 
@@ -262,7 +260,7 @@ const AddArtworkForm: React.FC = () => {
         <button className={Styles.button} type="submit">
           Agregar Obra +
         </button>
-        <button onClick={handleBulkCreate}>bulk create</button>
+        {/*  <button onClick={handleBulkCreate}>bulk create</button> */}
       </form>
     </div>
   );

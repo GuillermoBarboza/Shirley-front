@@ -172,6 +172,44 @@ const AddArtworkForm: React.FC = () => {
     }
   };
 
+  const handleBulkEdit = async () => {
+    try {
+      // Fetch all artworks from the API
+      const response = await axios.get(
+        //@ts-ignore
+        process.env.NEXT_PUBLIC_API_ENDPOINT
+      );
+      const artworks = response.data;
+
+      // Update the 'available' field for each artwork
+      const updatedArtworks = artworks.map((artwork: any) => ({
+        ...artwork,
+        available: true,
+      }));
+
+      // Make axios call to update each artwork
+      await Promise.all(
+        updatedArtworks.map(async (artwork: any) => {
+          try {
+            await axios.put(
+              `${process.env.NEXT_PUBLIC_API_ENDPOINT}/${artwork._id}`,
+              artwork
+            );
+            console.log(`Artwork ${artwork._id} updated successfully`);
+          } catch (error) {
+            console.error(`Error updating artwork ${artwork._id}:`, error);
+          }
+        })
+      );
+
+      console.log("Bulk edit completed successfully");
+
+      // ... additional logic or UI updates if needed
+    } catch (error) {
+      console.error("Error fetching artworks:", error);
+    }
+  };
+
   return (
     <div className={Styles.artworkFormContainer}>
       <h2>Agregar obra</h2>
@@ -260,6 +298,7 @@ const AddArtworkForm: React.FC = () => {
         <button className={Styles.button} type="submit">
           Agregar Obra +
         </button>
+
         {/*  <button onClick={handleBulkCreate}>bulk create</button> */}
       </form>
     </div>

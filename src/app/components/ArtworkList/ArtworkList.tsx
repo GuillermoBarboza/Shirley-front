@@ -38,6 +38,7 @@ const firebase = getStorage(app);
 const ArtworkList: React.FC = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [modalActive, setModalActive] = useState(false);
+  const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null);
 
   useEffect(() => {
     // Fetch artworks from the backend API
@@ -100,20 +101,22 @@ const ArtworkList: React.FC = () => {
               <button
                 onClick={() => {
                   setModalActive(true);
+                  setActiveArtwork(artwork);
                 }}
               >
                 Editar
               </button>
-
-              <EditableArtwork
-                setIsActive={setModalActive}
-                artwork={artwork}
-                isActive={modalActive}
-              />
             </div>
           </li>
         ))}
       </ul>
+      {activeArtwork && (
+        <EditableArtwork
+          setIsActive={setModalActive}
+          artwork={activeArtwork}
+          isActive={modalActive}
+        />
+      )}
     </div>
   );
 };

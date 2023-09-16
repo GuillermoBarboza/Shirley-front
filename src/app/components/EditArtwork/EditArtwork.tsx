@@ -153,6 +153,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
       );
 
       console.log("Artwork added successfully:", response.data);
+      setIsActive(false);
     } catch (error) {
       console.error("Error adding artwork:", error);
     }

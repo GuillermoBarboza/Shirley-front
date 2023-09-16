@@ -32,9 +32,9 @@
   margin-bottom: 10px;
 }
 
-.button {
+/* .button {
   margin-bottom: 0;
-}
+} */
 
 @media (max-width: 768px) {
   .artworkFormContainer {

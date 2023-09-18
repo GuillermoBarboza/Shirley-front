@@ -39,6 +39,7 @@ const ArtworkList: React.FC = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [modalActive, setModalActive] = useState(false);
   const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null);
+  const [allowDelete, SetAllowDelete] = useState<string>("");
 
   useEffect(() => {
     // Fetch artworks from the backend API
@@ -94,10 +95,28 @@ const ArtworkList: React.FC = () => {
             {/* @next/next/no-img-element */}
             <img src={artwork.url} alt={artwork.title || "Obra de shirley"} />
             <div className={styles.artworkItemContent}>
-              <button onClick={() => handleDelete(artwork._id, artwork.url)}>
-                <strong>Borrar obra.</strong>
-              </button>
-
+              {allowDelete != artwork._id && (
+                <button
+                  onClick={() => {
+                    SetAllowDelete(artwork._id);
+                    setTimeout(() => {
+                      SetAllowDelete("");
+                    }, 3000);
+                  }}
+                >
+                  <strong>Borrar Obra</strong>
+                </button>
+              )}
+              {allowDelete === artwork._id && (
+                <button
+                  style={{ backgroundColor: "red" }}
+                  onClick={() => {
+                    handleDelete(artwork._id, artwork.url);
+                  }}
+                >
+                  <strong>Confirmar</strong>
+                </button>
+              )}
               <button
                 onClick={() => {
                   setModalActive(true);

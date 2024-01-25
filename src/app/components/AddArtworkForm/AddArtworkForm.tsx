@@ -132,6 +132,7 @@ const AddArtworkForm: React.FC = () => {
       setAvailable(false);
       setImageFile(null);
       setDescription("");
+      window.location.reload()
     } catch (error) {
       console.error("Error adding artwork:", error);
     }
@@ -211,97 +212,67 @@ const AddArtworkForm: React.FC = () => {
   };
 
   return (
-    <div className={Styles.artworkFormContainer}>
-      <h2>Agregar obra</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Titulo:
-          <input type="text" value={title} onChange={handleTitleChange} />
-        </label>
-        <br />
-        <label>
-          Artista:
-          <input type="text" value={artist} onChange={handleArtistChange} />
-        </label>
-        <br />
-        <label>
-          Descripcion:
-          <br />
-          <textarea
-            className={Styles.description}
-            value={description}
-            onChange={handleDescriptionChange}
-            rows={5} // specify the number of visible lines
-          />
-        </label>
-        <br />
-        <label>
-          Estilo/s (comma-separated):
-          <input
-            type="text"
-            value={styles.join(",")}
-            onChange={handleStyleChange}
-          />
-        </label>
-        <br />
-        <label>
-          Colección:
-          <input
-            type="text"
-            value={coleccion}
-            onChange={handleCollectionChange}
-          />
-        </label>
-        <br />
-        <label>
-          Tamaño:
-          <input type="text" value={size} onChange={handleSizeChange} />
-        </label>
-        <br />
-        <label>
-          Año:
-          <input
-            type="number"
-            value={year !== undefined ? year : ""}
-            onChange={handleYearChange}
-          />
-        </label>
-        <br />
-        <label>
-          Precio:
-          <input
-            type="number"
-            value={price !== undefined ? price : ""}
-            onChange={handlePriceChange}
-          />
-        </label>
-        <br />
-        <label>
-          Disponible:
-          <input
-            type="checkbox"
-            checked={available}
-            onChange={handleAvailableChange}
-          />
-        </label>
-        <br />
-        <label>
-          Image:
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            required
-          />
-        </label>
-        <br />
-        <button className={Styles.button} type="submit">
+    <div className="container mx-auto max-w-4xl bg-gray-100 rounded-lg shadow p-6 text-gray-700">
+      <h2 className="text-2xl font-bold mb-6">Agregar obra</h2>
+      <form onSubmit={handleSubmit} className="grid text-slate-100 grid-cols-1 gap-4">
+        <div>
+          <label className="block text-md font-medium text-gray-700">Título:</label>
+          <input type="text" value={title} onChange={handleTitleChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Artista:</label>
+          <input type="text" value={artist} onChange={handleArtistChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Descripción:</label>
+          <textarea className="p-2 block w-full rounded-md border-gray-300 shadow-sm" value={description} onChange={handleDescriptionChange} rows={5} />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Estilo/s (comma-separated):</label>
+          <input type="text" value={styles.join(",")} onChange={handleStyleChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Colección:</label>
+          <input type="text" value={coleccion} onChange={handleCollectionChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Tamaño:</label>
+          <input type="text" value={size} onChange={handleSizeChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Año:</label>
+          <input type="number" value={year !== undefined ? year : ""} onChange={handleYearChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Precio:</label>
+          <input type="number" value={price !== undefined ? price : ""} onChange={handlePriceChange} className="p-2 block w-full rounded-md border-gray-300 shadow-sm" />
+        </div>
+
+        <div>
+          <label className="flex items-center text-md font-medium text-gray-700">
+            <input type="checkbox" checked={available} onChange={handleAvailableChange} className="mr-2 rounded border-gray-300 text-blue-600 shadow-sm" />
+            Disponible
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-md font-medium text-gray-700">Imagen:</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} required className="p-2 block w-full rounded-md border-gray-300 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+        </div>
+
+        <button type="submit" className="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-white font-bold rounded-lg shadow">
           Agregar Obra +
         </button>
-
-        {/*  <button onClick={handleBulkCreate}>bulk create</button> */}
       </form>
     </div>
+
   );
 };
 

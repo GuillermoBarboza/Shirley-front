@@ -16,7 +16,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link href="./output.css" rel="stylesheet" />
+      </head>
+      <body className={'bg-orange-200 p-3 text-base font-sans leading-normal' + inter.className}>
+        {children}
+      </body>
+
     </html>
   )
 }

@@ -87,16 +87,17 @@ const ArtworkList: React.FC = () => {
   };
 
   return (
-    <div className={styles.artworkListContainer}>
-      <h1>Lista de obras</h1>
-      <ul>
+    <div className="p-8 bg-gray-100 text-gray-800 rounded-lg">
+      <h1 className="text-3xl font-bold text-center mb-6">Lista de obras</h1>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {artworks.map((artwork) => (
-          <li className={styles.artworkItem} key={artwork._id}>
-            {/* @next/next/no-img-element */}
-            <img src={artwork.url} alt={artwork.title || "Obra de shirley"} />
-            <div className={styles.artworkItemContent}>
-              {allowDelete != artwork._id && (
+          <li key={artwork._id} className="bg-white rounded-lg shadow overflow-hidden">
+            <img src={artwork.url} alt={artwork.title || "Obra de arte"} className="w-full h-48 object-cover" />
+            <div className="p-4">
+              <h3 className="text-xl font-semibold mb-2">{artwork.title || "Título desconocido"}</h3>
+              {allowDelete !== artwork._id && (
                 <button
+                  className="btn btn-error btn-outline btn-sm"
                   onClick={() => {
                     SetAllowDelete(artwork._id);
                     setTimeout(() => {
@@ -104,20 +105,19 @@ const ArtworkList: React.FC = () => {
                     }, 3000);
                   }}
                 >
-                  <strong>Borrar Obra</strong>
+                  Borrar Obra
                 </button>
               )}
               {allowDelete === artwork._id && (
                 <button
-                  style={{ backgroundColor: "red" }}
-                  onClick={() => {
-                    handleDelete(artwork._id, artwork.url);
-                  }}
+                  className="btn btn-error btn-sm"
+                  onClick={() => handleDelete(artwork._id, artwork.url)}
                 >
-                  <strong>Confirmar</strong>
+                  Confirmar
                 </button>
               )}
               <button
+                className="btn btn-primary btn-sm ml-2"
                 onClick={() => {
                   setModalActive(true);
                   setActiveArtwork(artwork);

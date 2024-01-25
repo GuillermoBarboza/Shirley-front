@@ -109,3 +109,7 @@ a {
     color-scheme: dark;
   }
 }
+
+input, textarea {
+  background-color: rgb(37, 37, 37);
+}

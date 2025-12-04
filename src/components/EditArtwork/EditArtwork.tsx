@@ -195,7 +195,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="text"
                                     value={title}
                                     onChange={handleTitleChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -206,7 +206,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="text"
                                     value={artist}
                                     onChange={handleArtistChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -217,7 +217,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     value={description}
                                     onChange={handleDescriptionChange}
                                     rows={5}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 ></textarea>
                             </div>
                             <div>
@@ -228,7 +228,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="text"
                                     value={styles}
                                     onChange={handleStylesChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -239,7 +239,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="text"
                                     value={size}
                                     onChange={handleSizeChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -250,7 +250,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="number"
                                     value={price}
                                     onChange={handlePriceChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -261,7 +261,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="number"
                                     value={year}
                                     onChange={handleYearChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -272,7 +272,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="checkbox"
                                     checked={available}
                                     onChange={handleAvailableChange}
-                                    className="mt-1 text-slate-100 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -283,7 +283,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="text"
                                     value={coleccion}
                                     onChange={handleColeccionChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <div>
@@ -294,7 +294,7 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    className="mt-1 text-slate-100 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
                                 />
                             </div>
                             <button

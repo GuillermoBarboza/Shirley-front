@@ -8,7 +8,7 @@ import {
     getDownloadURL,
 } from "firebase/storage";
 import { storage } from "../../app/utils/firebaseClient";
-//import Styles from "./ArtworkForm.module.css";
+import css from "./ArtworkForm.module.css";
 
 const AddArtworkForm: React.FC = () => {
     const [title, setTitle] = useState("");
@@ -136,7 +136,7 @@ const AddArtworkForm: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto max-w-4xl bg-gray-100 rounded-lg shadow p-6 text-gray-700">
+        <div className={`${css.container} container mx-auto max-w-4xl bg-gray-100 rounded-lg shadow p-6 text-black-700`}>
             <h2 className="text-2xl font-bold mb-6">Agregar obra</h2>
             <form
                 onSubmit={handleSubmit}
@@ -150,7 +150,7 @@ const AddArtworkForm: React.FC = () => {
                         type="text"
                         value={title}
                         onChange={handleTitleChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -162,7 +162,7 @@ const AddArtworkForm: React.FC = () => {
                         type="text"
                         value={artist}
                         onChange={handleArtistChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -171,7 +171,7 @@ const AddArtworkForm: React.FC = () => {
                         Descripción:
                     </label>
                     <textarea
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                         value={description}
                         onChange={handleDescriptionChange}
                         rows={5}
@@ -186,7 +186,7 @@ const AddArtworkForm: React.FC = () => {
                         type="text"
                         value={styles.join(",")}
                         onChange={handleStyleChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -198,7 +198,7 @@ const AddArtworkForm: React.FC = () => {
                         type="text"
                         value={coleccion}
                         onChange={handleCollectionChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -210,7 +210,7 @@ const AddArtworkForm: React.FC = () => {
                         type="text"
                         value={size}
                         onChange={handleSizeChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -222,7 +222,7 @@ const AddArtworkForm: React.FC = () => {
                         type="number"
                         value={year !== undefined ? year : ""}
                         onChange={handleYearChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -234,7 +234,7 @@ const AddArtworkForm: React.FC = () => {
                         type="number"
                         value={price !== undefined ? price : ""}
                         onChange={handlePriceChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
                     />
                 </div>
 
@@ -259,7 +259,7 @@ const AddArtworkForm: React.FC = () => {
                         accept="image/*"
                         onChange={handleImageChange}
                         required
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
                 </div>
 

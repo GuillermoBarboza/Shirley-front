@@ -27,32 +27,41 @@ const LoginPage = () => {
         }
     };
 
-    /*  useEffect(() => {
-        setToken(localStorage.getItem("token"));
-    }, []); */
+    const handleForgotPassword = (e: React.MouseEvent) => {
+        e.preventDefault();
+        router.push("/forgot-password");
+    };
+
 
     return (
-        <div>
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-                <div>
-                    <label>Email or Username:</label>
+        <div className="login-container">
+            <h2 className="login-title">Login</h2>
+            <form onSubmit={handleLogin} className="login-form">
+                <div className="form-group">
+                    <label htmlFor="emailOrUsername">Email or Username:</label>
                     <input
+                        id="emailOrUsername"
                         type="text"
                         value={emailOrUsername}
                         onChange={(e) => setEmailOrUsername(e.target.value)}
+                        className="form-input"
                     />
                 </div>
-                <div>
-                    <label>Password:</label>
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
                     <input
+                        id="password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        className="form-input"
                     />
+                    <a href="#" className="forgot-password" onClick={handleForgotPassword}>
+                        Forgot password?
+                    </a>
                 </div>
-                {error && <p>{error}</p>}
-                <button type="submit">Login</button>
+                {error && <p className="error-message">{error}</p>}
+                <button type="submit" className="login-button">Login</button>
             </form>
         </div>
     );
@@ -60,11 +69,3 @@ const LoginPage = () => {
 
 export default LoginPage;
 
-/* export default function App() {
-  return (
-    <main className='p-8 mx-auto max-w-screen-xl bg-orange-100 shadow-md rounded-lg'>
-      <Home />
-    </main>
-
-  );
-} */

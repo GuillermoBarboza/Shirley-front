@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
     //listAll,
@@ -8,6 +8,7 @@ import {
     getDownloadURL,
 } from "firebase/storage";
 import { storage } from "../../app/utils/firebaseClient";
+import { uploadThumbnail } from "../../app/utils/thumbnails";
 import css from "./ArtworkForm.module.css";
 
 const AddArtworkForm: React.FC = () => {
@@ -22,6 +23,21 @@ const AddArtworkForm: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [description, setDescription] = useState("");
     const [coleccion, setCollection] = useState("");
+
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
+
+    // Local preview of the chosen file, revoked when it changes or unmounts.
+    useEffect(() => {
+        if (!imageFile) {
+            setPreviewUrl(null);
+            return;
+        }
+        const objectUrl = URL.createObjectURL(imageFile);
+        setPreviewUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [imageFile]);
 
     const handleCollectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCollection(e.target.value);
@@ -70,8 +86,16 @@ const AddArtworkForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
 
-        const artworkData = {
+        if (imageFile && imageFile.size > 16 * 1024 * 1024) {
+            setError("La imagen supera los 16 MB.");
+            return;
+        }
+
+        setSubmitting(true);
+
+        const artworkData: Record<string, unknown> = {
             title,
             artist,
             styles,
@@ -83,31 +107,29 @@ const AddArtworkForm: React.FC = () => {
             description,
             coleccion,
         };
-        console.log(artworkData);
 
         try {
             if (imageFile) {
-                if (imageFile.size <= 16 * 1024 * 1024) {
-                    const storageRef = ref(
-                        storage,
-                        `/${process.env.NEXT_PUBLIC_STORAGE_FOLDER}/${imageFile.name}`
-                    );
-                    const metadata = {
-                        contentType: imageFile.type,
-                    };
-                    await uploadBytes(storageRef, imageFile, metadata);
-                    artworkData.url = await getDownloadURL(storageRef);
-                }
-            }
+                const storageRef = ref(
+                    storage,
+                    `/${process.env.NEXT_PUBLIC_STORAGE_FOLDER}/${imageFile.name}`
+                );
+                const metadata = {
+                    contentType: imageFile.type,
+                };
+                await uploadBytes(storageRef, imageFile, metadata);
+                artworkData.url = await getDownloadURL(storageRef);
 
-            console.log(
-                "Artwork create endpoint:",
-                process.env.NEXT_PUBLIC_API_ENDPOINT + "/create"
-            );
+                // Grids read thumbUrl; originals run to several MB apiece.
+                artworkData.thumbUrl = await uploadThumbnail(
+                    imageFile,
+                    imageFile.name
+                );
+            }
 
             const token = localStorage.getItem("token");
 
-            const response = await axios.post(
+            await axios.post(
                 process.env.NEXT_PUBLIC_API_ENDPOINT + "/create",
                 artworkData,
                 {
@@ -116,8 +138,6 @@ const AddArtworkForm: React.FC = () => {
                     },
                 }
             );
-
-            console.log("Artwork added successfully:", response.data);
 
             setTitle("");
             setArtist("Shirley Madero");
@@ -129,145 +149,166 @@ const AddArtworkForm: React.FC = () => {
             setAvailable(false);
             setImageFile(null);
             setDescription("");
+            setCollection("");
             window.location.reload();
         } catch (error) {
             console.error("Error adding artwork:", error);
+            setError("No pudimos guardar la obra. Probá de nuevo.");
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className={`${css.container} container mx-auto max-w-4xl bg-gray-100 rounded-lg shadow p-6 text-black-700`}>
-            <h2 className="text-2xl font-bold mb-6">Agregar obra</h2>
-            <form
-                onSubmit={handleSubmit}
-                className="grid text-slate-100 grid-cols-1 gap-4"
-            >
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Título:
+        <div className={css.panel}>
+            <h2 className={css.title}>Agregar obra</h2>
+
+            {error && (
+                <div className="adm-banner adm-banner--error">{error}</div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-title">
+                        Título
                     </label>
                     <input
+                        id="art-title"
                         type="text"
                         value={title}
                         onChange={handleTitleChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        className="adm-input"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Artista:
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-artist">
+                        Artista
                     </label>
                     <input
+                        id="art-artist"
                         type="text"
                         value={artist}
                         onChange={handleArtistChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        className="adm-input"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Descripción:
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-description">
+                        Descripción
                     </label>
                     <textarea
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        id="art-description"
+                        className="adm-textarea"
                         value={description}
                         onChange={handleDescriptionChange}
-                        rows={5}
+                        rows={4}
                     />
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Estilo/s (comma-separated):
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-styles">
+                        Estilo/s (separados por coma)
                     </label>
                     <input
+                        id="art-styles"
                         type="text"
                         value={styles.join(",")}
                         onChange={handleStyleChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        className="adm-input"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Colección:
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-coleccion">
+                        Colección
                     </label>
                     <input
+                        id="art-coleccion"
                         type="text"
                         value={coleccion}
                         onChange={handleCollectionChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        className="adm-input"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Tamaño:
-                    </label>
-                    <input
-                        type="text"
-                        value={size}
-                        onChange={handleSizeChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
-                    />
+                <div className={css.row}>
+                    <div>
+                        <label className="adm-label" htmlFor="art-size">
+                            Tamaño
+                        </label>
+                        <input
+                            id="art-size"
+                            type="text"
+                            value={size}
+                            onChange={handleSizeChange}
+                            className="adm-input"
+                        />
+                    </div>
+                    <div>
+                        <label className="adm-label" htmlFor="art-year">
+                            Año
+                        </label>
+                        <input
+                            id="art-year"
+                            type="number"
+                            value={year !== undefined ? year : ""}
+                            onChange={handleYearChange}
+                            className="adm-input"
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Año:
+                <div className={css.field}>
+                    <label className="adm-label" htmlFor="art-price">
+                        Precio
                     </label>
                     <input
-                        type="number"
-                        value={year !== undefined ? year : ""}
-                        onChange={handleYearChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Precio:
-                    </label>
-                    <input
+                        id="art-price"
                         type="number"
                         value={price !== undefined ? price : ""}
                         onChange={handlePriceChange}
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700"
+                        className="adm-input"
                     />
                 </div>
 
-                <div>
-                    <label className="flex items-center text-md font-medium text-gray-700">
-                        <input
-                            type="checkbox"
-                            checked={available}
-                            onChange={handleAvailableChange}
-                            className="mr-2 rounded border-gray-300 text-blue-600 shadow-sm"
-                        />
-                        Disponible
-                    </label>
-                </div>
+                <label className={css.checkbox}>
+                    <input
+                        type="checkbox"
+                        checked={available}
+                        onChange={handleAvailableChange}
+                    />
+                    Disponible
+                </label>
 
-                <div>
-                    <label className="block text-md font-medium text-gray-700">
-                        Imagen:
+                <div className={css.fileField}>
+                    <label className="adm-label" htmlFor="art-image">
+                        Imagen
                     </label>
                     <input
+                        id="art-image"
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
                         required
-                        className="p-2 block w-full rounded-md border-gray-300 shadow-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className={css.file}
                     />
+                    {previewUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={previewUrl}
+                            alt="Vista previa de la obra"
+                            className={css.preview}
+                        />
+                    )}
                 </div>
 
                 <button
                     type="submit"
-                    className="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-white font-bold rounded-lg shadow"
+                    className="adm-btn adm-btn--block"
+                    disabled={submitting}
                 >
-                    Agregar Obra +
+                    {submitting ? "Guardando…" : "Agregar obra +"}
                 </button>
             </form>
         </div>

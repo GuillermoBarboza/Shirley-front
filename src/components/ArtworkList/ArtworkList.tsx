@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-/* import styles from "./Artwork.module.css"; */
+import styles from "./Artwork.module.css";
 import { EditableArtwork } from "../EditArtwork/EditArtwork";
 import Image from "next/image";
 import { deleteImage } from "../../app/utils/firebase";
+import { thumbPathFromUrl } from "../../app/utils/thumbnails";
 
 interface Artwork {
     _id: string;
@@ -18,17 +19,27 @@ interface Artwork {
     available?: boolean;
     coleccion?: string;
     url: string;
+    thumbUrl?: string;
 }
+
+/** "2023 · 40x50 cm", tolerating sizes that already carry the unit. */
+const metaLine = (artwork: Artwork): string => {
+    const bare = (artwork.size || "")
+        .replace(/cms?\.?/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    return [artwork.year, bare ? `${bare} cm` : ""].filter(Boolean).join(" · ");
+};
 
 const ArtworkList: React.FC = () => {
     const [artworks, setArtworks] = useState<Artwork[]>([]);
     const [modalActive, setModalActive] = useState(false);
     const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null);
     const [allowDelete, SetAllowDelete] = useState<string>("");
+    const disarmTimer = useRef<number | undefined>(undefined);
 
     useEffect(() => {
         // Fetch artworks from the backend API
-        console.log(process.env.NEXT_PUBLIC_API_ENDPOINT);
         if (
             process.env.NEXT_PUBLIC_API_ENDPOINT &&
             process.env.NEXT_PUBLIC_API_ENDPOINT.length > 1
@@ -44,15 +55,24 @@ const ArtworkList: React.FC = () => {
         }
     }, []);
 
+    useEffect(() => () => window.clearTimeout(disarmTimer.current), []);
+
     const handleDelete = async (id: string, url: string) => {
         // Create a reference to the file to delete
         const relativePath = decodeURIComponent(url).split("/o/")[1];
         const path = relativePath.split("?alt=")[0];
-        console.log(path);
 
         await deleteImage(path);
+
+        // The thumbnail is a separate storage object and would otherwise be
+        // orphaned. deleteImage swallows its own errors, so a missing thumbnail
+        // (artworks predating the pipeline) is harmless.
+        const thumbPath = thumbPathFromUrl(url);
+        if (thumbPath) {
+            await deleteImage(thumbPath);
+        }
+
         // Send a delete request to the backend API
-        console.log(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/${id}`);
         axios
             .delete(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/${id}`, {
                 headers: {
@@ -68,64 +88,77 @@ const ArtworkList: React.FC = () => {
             });
     };
 
+    const armDelete = (id: string) => {
+        window.clearTimeout(disarmTimer.current);
+        SetAllowDelete(id);
+        disarmTimer.current = window.setTimeout(
+            () => SetAllowDelete(""),
+            3000
+        );
+    };
+
     return (
-        <div className="p-8 bg-gray-100 text-gray-800 rounded-lg">
-            <h1 className="text-3xl font-bold text-center mb-6">
-                Lista de obras
-            </h1>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {artworks.map((artwork) => (
-                    <li
-                        key={artwork._id}
-                        className="bg-white rounded-lg shadow overflow-hidden"
-                    >
-                        <Image
-                            width={300}
-                            height={200}
-                            src={artwork.url.toString()}
-                            alt={artwork.title || "Obra de arte"}
-                            className="w-full h-48 object-cover"
-                        />
-                        <div className="p-4">
-                            <h3 className="text-xl font-semibold mb-2">
-                                {artwork.title || "Título desconocido"}
-                            </h3>
-                            {allowDelete !== artwork._id && (
-                                <button
-                                    className="btn btn-error btn-outline btn-sm"
-                                    onClick={() => {
-                                        SetAllowDelete(artwork._id);
-                                        setTimeout(() => {
-                                            SetAllowDelete("");
-                                        }, 3000);
-                                    }}
-                                >
-                                    Borrar Obra
-                                </button>
-                            )}
-                            {allowDelete === artwork._id && (
-                                <button
-                                    className="btn btn-error btn-sm"
-                                    onClick={() =>
-                                        handleDelete(artwork._id, artwork.url)
-                                    }
-                                >
-                                    Confirmar
-                                </button>
-                            )}
-                            <button
-                                className="btn btn-primary btn-sm ml-2"
-                                onClick={() => {
-                                    setModalActive(true);
-                                    setActiveArtwork(artwork);
-                                }}
-                            >
-                                Editar
-                            </button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+        <div className={styles.wrap}>
+            <h2 className={styles.title}>
+                Lista de obras · {artworks.length}
+            </h2>
+
+            {artworks.length === 0 ? (
+                <div className={styles.empty}>
+                    Todavía no hay obras cargadas.
+                </div>
+            ) : (
+                <ul className={styles.grid}>
+                    {artworks.map((artwork) => (
+                        <li key={artwork._id} className={styles.card}>
+                            <Image
+                                width={300}
+                                height={200}
+                                src={(
+                                    artwork.thumbUrl || artwork.url
+                                ).toString()}
+                                alt={artwork.title || "Obra de arte"}
+                                className={styles.thumb}
+                            />
+                            <div className={styles.body}>
+                                <div className={styles.cardTitle}>
+                                    {artwork.title || "Título desconocido"}
+                                </div>
+                                <div className={styles.meta}>
+                                    {metaLine(artwork) || "Sin datos"}
+                                </div>
+                                <div className={styles.actions}>
+                                    <button
+                                        className={`${styles.action} ${styles.edit}`}
+                                        onClick={() => {
+                                            setModalActive(true);
+                                            setActiveArtwork(artwork);
+                                        }}
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        className={`${styles.action} ${styles.del}`}
+                                        onClick={() =>
+                                            allowDelete === artwork._id
+                                                ? handleDelete(
+                                                      artwork._id,
+                                                      artwork.url
+                                                  )
+                                                : armDelete(artwork._id)
+                                        }
+                                    >
+                                        {allowDelete === artwork._id
+                                            ? "Confirmar"
+                                            : "Borrar obra"}
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
             {activeArtwork && (
                 <EditableArtwork
                     setIsActive={setModalActive}

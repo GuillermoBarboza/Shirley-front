@@ -2,103 +2,173 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Admin design tokens. Mirrors shirley-storefront/src/styles/tokens.css, on the
+ * admin's own #f4f2ee background. Source of truth: the Claude Design project
+ * "Shirley Madero".
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --surface: #f4f2ee;
+    --card: #ffffff;
+    --paper: #fbf6ea;
+    --border: #e4e0d8;
+
+    --ink: #2b241d;
+    --ink-70: rgba(43, 36, 29, 0.7);
+    --ink-65: rgba(43, 36, 29, 0.65);
+    --ink-60: rgba(43, 36, 29, 0.6);
+    --ink-50: rgba(43, 36, 29, 0.5);
+    --ink-45: rgba(43, 36, 29, 0.45);
+
+    --gold: #b98a3a;
+    --gold-deep: #8c6526;
+    --terracotta: #a1512f;
+
+    --danger-bg: #f7e6df;
+    --danger-ink: #8a3c22;
+    --ok-bg: #e6efe1;
+    --ok-ink: #3d6b3f;
+
+    --font-ui: var(--font-archivo), system-ui, sans-serif;
+    --font-editorial: var(--font-newsreader), Georgia, serif;
+    --font-script: var(--font-script-face), cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/*
+ * The admin is a deliberately light, fixed-palette surface. The previous
+ * prefers-color-scheme override flipped the background to near-black while the
+ * cards stayed white, which is not a designed state.
+ */
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Container styling */
-.login-container {
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background: white;
+/* --- Shared primitives (buttons are square by design) --- */
+
+.adm-card {
+    background: var(--card);
+    border: 1px solid var(--border);
 }
 
-/* Form title */
-.login-title {
-  text-align: center;
-  margin-bottom: 24px;
-  color: #333;
+.adm-btn {
+    display: inline-block;
+    border: none;
+    padding: 12px 22px;
+    font: 600 13px var(--font-ui);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: var(--gold);
+    color: #fff;
+    transition: background 0.18s ease;
 }
 
-/* Form groups */
-.form-group {
-  margin-bottom: 16px;
+.adm-btn:hover:not(:disabled) {
+    background: var(--gold-deep);
 }
 
-/* Labels */
-label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
+.adm-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
-/* Input fields */
-.form-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.2s;
+.adm-btn--block {
+    width: 100%;
+    padding: 12px;
 }
 
-.form-input:focus {
-  border-color: #4a90e2;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+.adm-btn--ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 9px 18px;
+    font-size: 12px;
 }
 
-/* Forgot password link */
-.forgot-password {
-  display: block;
-  margin-top: 8px;
-  font-size: 14px;
-  color: #4a90e2;
-  text-decoration: none;
-  text-align: right;
+.adm-btn--ghost:hover:not(:disabled) {
+    background: var(--surface);
 }
 
-.forgot-password:hover {
-  text-decoration: underline;
+.adm-btn--danger-outline {
+    background: transparent;
+    border: 1px solid var(--terracotta);
+    color: var(--terracotta);
+    padding: 10px 20px;
+    font-size: 12px;
 }
 
-/* Error message */
-.error-message {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-bottom: 16px;
+.adm-btn--danger-outline:hover:not(:disabled) {
+    background: var(--danger-bg);
 }
 
-/* Login button */
-.login-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.adm-label {
+    display: block;
+    font: 500 12px var(--font-ui);
+    color: var(--ink-60);
+    margin-bottom: 6px;
 }
 
-.login-button:hover {
-  background-color: #3a7bc8;
+.adm-input,
+.adm-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-family: var(--font-ui);
+    background: #fff;
+    color: var(--ink);
+}
+
+.adm-input:focus,
+.adm-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.adm-textarea {
+    min-height: 64px;
+    resize: vertical;
+}
+
+.adm-banner {
+    font: 500 13px var(--font-ui);
+    padding: 10px 14px;
+    margin-bottom: 18px;
+}
+
+.adm-banner--error {
+    background: var(--danger-bg);
+    color: var(--danger-ink);
+}
+
+.adm-banner--ok {
+    background: var(--ok-bg);
+    color: var(--ok-ink);
+}
+
+.adm-title {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+}
+
+.adm-link {
+    cursor: pointer;
+    font: 600 13px var(--font-ui);
+    color: var(--gold-deep);
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.adm-link:hover {
+    color: var(--terracotta);
 }

@@ -2,16 +2,20 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import AuthCard from "@/components/AuthCard/AuthCard";
+import styles from "./login.module.css";
 
 const LoginPage = () => {
     const [emailOrUsername, setEmailOrUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
-    //const [token, setToken] = useState("");
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setSubmitting(true);
         try {
             const response = await axios.post(
                 process.env.NEXT_PUBLIC_LOGIN_ENDPOINT + "/users/login",
@@ -23,49 +27,60 @@ const LoginPage = () => {
             localStorage.setItem("token", response.data.token);
             router.push("/admin"); // Redirect to admin page
         } catch {
-            setError("Invalid email/username or password");
+            setError("Usuario o contraseña incorrectos.");
+            setSubmitting(false);
         }
     };
 
-    const handleForgotPassword = (e: React.MouseEvent) => {
-        e.preventDefault();
-        router.push("/forgot-password");
-    };
-
-
     return (
-        <div className="login-container">
-            <h2 className="login-title">Login</h2>
-            <form onSubmit={handleLogin} className="login-form">
-                <div className="form-group">
-                    <label htmlFor="emailOrUsername">Email or Username:</label>
-                    <input
-                        id="emailOrUsername"
-                        type="text"
-                        value={emailOrUsername}
-                        onChange={(e) => setEmailOrUsername(e.target.value)}
-                        className="form-input"
-                    />
+        <AuthCard brand>
+            {error && (
+                <div className="adm-banner adm-banner--error">{error}</div>
+            )}
+
+            <form onSubmit={handleLogin}>
+                <label className="adm-label" htmlFor="emailOrUsername">
+                    Email o usuario
+                </label>
+                <input
+                    id="emailOrUsername"
+                    type="text"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    className={`adm-input ${styles.field}`}
+                />
+
+                <label className="adm-label" htmlFor="password">
+                    Contraseña
+                </label>
+                <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="adm-input"
+                />
+
+                <div className={styles.forgotRow}>
+                    <button
+                        type="button"
+                        className={styles.forgotLink}
+                        onClick={() => router.push("/forgot-password")}
+                    >
+                        ¿Olvidaste tu contraseña?
+                    </button>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="form-input"
-                    />
-                    <a href="#" className="forgot-password" onClick={handleForgotPassword}>
-                        Forgot password?
-                    </a>
-                </div>
-                {error && <p className="error-message">{error}</p>}
-                <button type="submit" className="login-button">Login</button>
+
+                <button
+                    type="submit"
+                    className="adm-btn adm-btn--block"
+                    disabled={submitting}
+                >
+                    {submitting ? "Ingresando…" : "Ingresar"}
+                </button>
             </form>
-        </div>
+        </AuthCard>
     );
 };
 
 export default LoginPage;
-

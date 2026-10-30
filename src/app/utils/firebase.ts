@@ -42,6 +42,21 @@ const listFolderContents = async (folderPath: string) => {
     });
 };
 
+/**
+ * Storage path out of a Firebase download URL:
+ * `.../o/dev%2Fretrato.jpg?alt=media&token=..` -> `dev/retrato.jpg`.
+ * Returns null for anything that isn't shaped like one.
+ */
+const storagePathFromUrl = (url: string): string | null => {
+    try {
+        const relative = decodeURIComponent(url).split("/o/")[1];
+        if (!relative) return null;
+        return relative.split("?alt=")[0] || null;
+    } catch {
+        return null;
+    }
+};
+
 const deleteImage = async (path: string) => {
     try {
         const deleteRef = ref(storage, path);
@@ -61,4 +76,9 @@ const deleteImage = async (path: string) => {
     }
 };
 
-export { listFolderContents, copyFolderContents, deleteImage };
+export {
+    listFolderContents,
+    copyFolderContents,
+    deleteImage,
+    storagePathFromUrl,
+};

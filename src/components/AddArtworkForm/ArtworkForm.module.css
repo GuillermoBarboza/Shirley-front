@@ -1,5 +1,90 @@
-.container {
-    color: black;
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    min-width: 0;
 }
 
+.title {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0 0 20px;
+}
 
+.field {
+    margin-bottom: 14px;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.row > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 500 13px var(--font-ui);
+    margin-bottom: 16px;
+    cursor: pointer;
+}
+
+.checkbox input {
+    accent-color: var(--gold);
+    width: 15px;
+    height: 15px;
+}
+
+.fileField {
+    margin-bottom: 18px;
+}
+
+.file {
+    width: 100%;
+    box-sizing: border-box;
+    font: 400 13px var(--font-ui);
+    color: var(--ink-60);
+}
+
+.file::file-selector-button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    font: 600 12px var(--font-ui);
+    padding: 8px 14px;
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+.file::file-selector-button:hover {
+    background: #eceae5;
+}
+
+.preview {
+    margin-top: 12px;
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block;
+    background: var(--paper);
+    border: 1px solid var(--border);
+}
+
+.status {
+    margin-top: 14px;
+    font: 500 13px var(--font-ui);
+}
+
+@media (max-width: 640px) {
+    .panel {
+        padding: 24px 20px;
+    }
+}

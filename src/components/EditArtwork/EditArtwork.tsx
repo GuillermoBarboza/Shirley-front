@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../app/utils/firebaseClient";
+import { uploadThumbnail, thumbPathFromUrl } from "../../app/utils/thumbnails";
+import { deleteImage, storagePathFromUrl } from "../../app/utils/firebase";
+import css from "./EditArtwork.module.css";
 
 interface Artwork {
     _id: string;
@@ -16,6 +19,7 @@ interface Artwork {
     available?: boolean;
     coleccion?: string;
     url: string;
+    thumbUrl?: string;
 }
 
 interface EditableArtworkProps {
@@ -41,6 +45,9 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
     const [description, setDescription] = useState("");
     const [coleccion, setCollection] = useState("");
 
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
+
     useEffect(() => {
         if (artwork.title) setTitle(artwork.title);
         if (artwork.artist) setArtist(artwork.artist);
@@ -54,55 +61,32 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
         if (artwork.coleccion) setCollection(artwork.coleccion);
     }, [artwork]);
 
+    // Lock the page behind the dialog and wire Escape to close it.
+    useEffect(() => {
+        if (!isActive) return;
+        document.body.style.overflow = "hidden";
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsActive(false);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => {
+            document.body.style.overflow = "unset";
+            window.removeEventListener("keydown", onKey);
+        };
+    }, [isActive, setIsActive]);
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setImageFile(e.target.files[0]);
         }
     };
 
-    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTitle(e.target.value);
-    };
-
-    const handleArtistChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setArtist(e.target.value);
-    };
-
-    const handleDescriptionChange = (
-        e: React.ChangeEvent<HTMLTextAreaElement>
-    ) => {
-        setDescription(e.target.value);
-    };
-
-    const handleStylesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedStyles = e.target.value.split(",");
-        setStyles(selectedStyles);
-    };
-
-    const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSize(e.target.value);
-    };
-
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPrice(Number(e.target.value));
-    };
-
-    const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setYear(Number(e.target.value));
-    };
-
-    const handleAvailableChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setAvailable(e.target.checked);
-    };
-
-    const handleColeccionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setCollection(e.target.value);
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setSaving(true);
 
-        const artworkData = {
+        const artworkData: Record<string, unknown> = {
             title,
             artist,
             styles,
@@ -114,7 +98,12 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
             description,
             coleccion,
         };
-        console.log(artworkData);
+
+        // Storage objects the previous version owned. Collected here, deleted
+        // only after the save succeeds — if the PUT fails the artwork still
+        // points at them.
+        let staleOriginal: string | null = null;
+        let staleThumb: string | null = null;
 
         try {
             if (imageFile) {
@@ -127,13 +116,47 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                         contentType: imageFile.type,
                     };
                     await uploadBytes(storageRef, imageFile, metadata);
-                    artworkData.url = await getDownloadURL(storageRef);
+                    const newUrl = await getDownloadURL(storageRef);
+                    artworkData.url = newUrl;
+
+                    // Replacing the image must replace its thumbnail too,
+                    // otherwise the grid keeps showing the previous artwork.
+                    // null, not undefined: JSON drops undefined and Mongoose
+                    // would keep the old thumbUrl, pointing at a file we
+                    // may be about to delete. null clears it, so grids fall
+                    // back to `url`.
+                    artworkData.thumbUrl =
+                        (await uploadThumbnail(imageFile, imageFile.name)) ??
+                        null;
+
+                    // Only stale if the new upload landed somewhere else. A
+                    // same-named file overwrites in place, and `a.jpg` and
+                    // `a.png` share one `a.webp` thumbnail — deleting on either
+                    // would remove the file just uploaded. Compare both paths
+                    // independently.
+                    const oldOriginal = storagePathFromUrl(artwork.url);
+                    if (
+                        oldOriginal &&
+                        oldOriginal !== storagePathFromUrl(newUrl)
+                    ) {
+                        staleOriginal = oldOriginal;
+                    }
+
+                    const oldThumb = thumbPathFromUrl(artwork.url);
+                    if (oldThumb && oldThumb !== thumbPathFromUrl(newUrl)) {
+                        staleThumb = oldThumb;
+                    }
+                } else {
+                    setError("La imagen supera los 16 MB.");
+                    setSaving(false);
+                    return;
                 }
             } else {
                 artworkData.url = artwork.url;
+                artworkData.thumbUrl = artwork.thumbUrl;
             }
 
-            const response = await axios.put(
+            await axios.put(
                 `${process.env.NEXT_PUBLIC_API_ENDPOINT}/${artwork._id}`,
                 artworkData,
                 {
@@ -145,168 +168,217 @@ export const EditableArtwork: React.FC<EditableArtworkProps> = ({
                 }
             );
 
-            console.log("Artwork added successfully:", response.data);
+            // Safe now that the new URLs are persisted. deleteImage swallows
+            // its own errors, so a thumbnail that never existed (artworks
+            // predating the pipeline) is harmless.
+            if (staleOriginal) await deleteImage(staleOriginal);
+            if (staleThumb) await deleteImage(staleThumb);
+
             setIsActive(false);
             window.location.reload();
-        } catch (error) {
-            alert("Error adding artwork:" + error);
+        } catch (err) {
+            console.error("Error updating artwork:", err);
+            setError("No pudimos guardar los cambios. Probá de nuevo.");
+            setSaving(false);
         }
     };
 
+    if (!isActive) return null;
+
     return (
-        <>
-            {isActive && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-start pt-10">
-                    <div
-                        className="relative bg-white rounded-lg shadow-lg p-5 max-w-2xl w-full m-4 overflow-y-auto"
-                        style={{ maxHeight: "calc(100vh - 20px)" }}
-                    >
-                        <div className="flex justify-between items-start p-4 rounded-t border-b">
-                            <h3 className="text-xl font-semibold">
-                                Editar Obra
-                            </h3>
-                            <button
-                                onClick={() => setIsActive(false)}
-                                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
-                            >
-                                <svg
-                                    className="w-5 h-5"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clipRule="evenodd"
-                                    ></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <form
-                            onSubmit={handleSubmit}
-                            className="flex flex-col gap-4 p-4"
-                        >
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Titulo:
-                                </label>
-                                <input
-                                    type="text"
-                                    value={title}
-                                    onChange={handleTitleChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Artista:
-                                </label>
-                                <input
-                                    type="text"
-                                    value={artist}
-                                    onChange={handleArtistChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Descripcion:
-                                </label>
-                                <textarea
-                                    value={description}
-                                    onChange={handleDescriptionChange}
-                                    rows={5}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                ></textarea>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Estilos (separados por coma ,):
-                                </label>
-                                <input
-                                    type="text"
-                                    value={styles}
-                                    onChange={handleStylesChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Tamaño:
-                                </label>
-                                <input
-                                    type="text"
-                                    value={size}
-                                    onChange={handleSizeChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Precio:
-                                </label>
-                                <input
-                                    type="number"
-                                    value={price}
-                                    onChange={handlePriceChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Año:
-                                </label>
-                                <input
-                                    type="number"
-                                    value={year}
-                                    onChange={handleYearChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="flex items-center text-sm font-medium text-gray-700">
-                                    Disponible?
-                                </label>
-                                <input
-                                    type="checkbox"
-                                    checked={available}
-                                    onChange={handleAvailableChange}
-                                    className="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Coleccion:
-                                </label>
-                                <input
-                                    type="text"
-                                    value={coleccion}
-                                    onChange={handleColeccionChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Image:
-                                </label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="mt-4 px-4 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                            >
-                                Actualizar Obra
-                            </button>
-                        </form>
+        <div
+            className={css.overlay}
+            onClick={() => setIsActive(false)}
+            role="presentation"
+        >
+            <div
+                className={css.dialog}
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Editar obra"
+            >
+                <button
+                    onClick={() => setIsActive(false)}
+                    className={css.close}
+                    aria-label="Cerrar"
+                >
+                    ✕
+                </button>
+
+                <h2 className={css.title}>Editar obra</h2>
+
+                {error && (
+                    <div className="adm-banner adm-banner--error">{error}</div>
+                )}
+
+                <form onSubmit={handleSubmit}>
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-title">
+                            Título
+                        </label>
+                        <input
+                            id="edit-title"
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="adm-input"
+                        />
                     </div>
-                </div>
-            )}
-        </>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-artist">
+                            Artista
+                        </label>
+                        <input
+                            id="edit-artist"
+                            type="text"
+                            value={artist}
+                            onChange={(e) => setArtist(e.target.value)}
+                            className="adm-input"
+                        />
+                    </div>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-description">
+                            Descripción
+                        </label>
+                        <textarea
+                            id="edit-description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            rows={4}
+                            className="adm-textarea"
+                        />
+                    </div>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-styles">
+                            Estilos (separados por coma)
+                        </label>
+                        <input
+                            id="edit-styles"
+                            type="text"
+                            value={styles.join(",")}
+                            onChange={(e) =>
+                                setStyles(e.target.value.split(","))
+                            }
+                            className="adm-input"
+                        />
+                    </div>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-coleccion">
+                            Colección
+                        </label>
+                        <input
+                            id="edit-coleccion"
+                            type="text"
+                            value={coleccion}
+                            onChange={(e) => setCollection(e.target.value)}
+                            className="adm-input"
+                        />
+                    </div>
+
+                    <div className={css.row}>
+                        <div>
+                            <label className="adm-label" htmlFor="edit-size">
+                                Tamaño
+                            </label>
+                            <input
+                                id="edit-size"
+                                type="text"
+                                value={size}
+                                onChange={(e) => setSize(e.target.value)}
+                                className="adm-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="adm-label" htmlFor="edit-year">
+                                Año
+                            </label>
+                            <input
+                                id="edit-year"
+                                type="number"
+                                value={year ?? ""}
+                                onChange={(e) =>
+                                    setYear(
+                                        e.target.value === ""
+                                            ? undefined
+                                            : Number(e.target.value)
+                                    )
+                                }
+                                className="adm-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-price">
+                            Precio
+                        </label>
+                        <input
+                            id="edit-price"
+                            type="number"
+                            value={price ?? ""}
+                            onChange={(e) =>
+                                setPrice(
+                                    e.target.value === ""
+                                        ? undefined
+                                        : Number(e.target.value)
+                                )
+                            }
+                            className="adm-input"
+                        />
+                    </div>
+
+                    <label className={css.checkbox}>
+                        <input
+                            type="checkbox"
+                            checked={available}
+                            onChange={(e) => setAvailable(e.target.checked)}
+                        />
+                        Disponible
+                    </label>
+
+                    <div className={css.field}>
+                        <label className="adm-label" htmlFor="edit-image">
+                            Reemplazar imagen
+                        </label>
+                        <input
+                            id="edit-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className={css.file}
+                        />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={artwork.thumbUrl || artwork.url}
+                            alt={artwork.title || "Obra actual"}
+                            className={css.current}
+                        />
+                    </div>
+
+                    <div className={css.actions}>
+                        <button
+                            type="submit"
+                            className={`adm-btn ${css.save}`}
+                            disabled={saving}
+                        >
+                            {saving ? "Guardando…" : "Guardar cambios"}
+                        </button>
+                        <button
+                            type="button"
+                            className={`adm-btn adm-btn--ghost ${css.cancel}`}
+                            onClick={() => setIsActive(false)}
+                            disabled={saving}
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 };

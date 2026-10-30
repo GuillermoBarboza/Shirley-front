@@ -4,11 +4,21 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import ArtworkList from "../../components/ArtworkList/ArtworkList";
 import AddArtworkForm from "../../components/AddArtworkForm/AddArtworkForm";
-import styles from "./admin.module.css";
 import AdminContactInfo from "@/components/ContactInfo/AdminContactInfo";
+import AdminAccount from "@/components/Account/AdminAccount";
+import styles from "./admin.module.css";
+
+type Tab = "obras" | "contacto" | "cuenta";
+
+const TABS: { id: Tab; label: string }[] = [
+    { id: "obras", label: "Obras" },
+    { id: "contacto", label: "Contacto" },
+    { id: "cuenta", label: "Cuenta" },
+];
 
 const AdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [tab, setTab] = useState<Tab>("obras");
     const router = useRouter();
 
     useEffect(() => {
@@ -24,7 +34,6 @@ const AdminPage = () => {
             })
             .then((response) => {
                 if (response.data.role === "admin") {
-                    console.log("User is authenticated");
                     setIsAuthenticated(true);
                 } else {
                     router.push("/"); // Redirect to login if not admin
@@ -41,27 +50,56 @@ const AdminPage = () => {
     };
 
     if (!isAuthenticated) {
-        return <p>Loading...</p>;
+        return <div className={styles.loading}>Verificando tu sesión…</div>;
     }
 
     return (
-        <div className={`${styles.container} shadow-lg p-6 rounded-lg`}>
-            <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={handleLogout}
-            >
-                Logout
-            </button>
-            <h1 className="prose prose-lg text-gray-800 font-bold mb-4">
-                Panel de administración
-            </h1>
-            <p className="text-gray-600 mb-6">
-                Aquí puedes agregar y eliminar obras de tu galería.
-            </p>
-            <AdminContactInfo />
-            {/* Add more content or components as needed */}
-            <AddArtworkForm />
-            <ArtworkList />
+        <div className={styles.page}>
+            <div className={styles.bar}>
+                <div className={styles.brand}>
+                    <div className={styles.wordmark}>Shirley Madero</div>
+                    <div className={styles.badge}>Panel</div>
+                </div>
+                <button
+                    className="adm-btn adm-btn--ghost"
+                    onClick={handleLogout}
+                >
+                    Cerrar sesión
+                </button>
+            </div>
+
+            <div className={styles.tabs}>
+                {TABS.map(({ id, label }) => (
+                    <button
+                        key={id}
+                        className={`${styles.tab} ${
+                            tab === id ? styles.tabActive : ""
+                        }`}
+                        onClick={() => setTab(id)}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            {tab === "obras" && (
+                <div className={styles.obras}>
+                    <AddArtworkForm />
+                    <ArtworkList />
+                </div>
+            )}
+
+            {tab === "contacto" && (
+                <div className={styles.narrow}>
+                    <AdminContactInfo />
+                </div>
+            )}
+
+            {tab === "cuenta" && (
+                <div className={styles.narrow}>
+                    <AdminAccount onLogout={handleLogout} />
+                </div>
+            )}
         </div>
     );
 };

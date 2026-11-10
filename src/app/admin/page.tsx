@@ -6,12 +6,14 @@ import ArtworkList from "../../components/ArtworkList/ArtworkList";
 import AddArtworkForm from "../../components/AddArtworkForm/AddArtworkForm";
 import AdminContactInfo from "@/components/ContactInfo/AdminContactInfo";
 import AdminAccount from "@/components/Account/AdminAccount";
+import AdminExperiences from "@/components/AdminExperiences/AdminExperiences";
 import styles from "./admin.module.css";
 
-type Tab = "obras" | "contacto" | "cuenta";
+type Tab = "obras" | "experiencias" | "contacto" | "cuenta";
 
 const TABS: { id: Tab; label: string }[] = [
     { id: "obras", label: "Obras" },
+    { id: "experiencias", label: "Experiencias" },
     { id: "contacto", label: "Contacto" },
     { id: "cuenta", label: "Cuenta" },
 ];
@@ -86,6 +88,12 @@ const AdminPage = () => {
                 <div className={styles.obras}>
                     <AddArtworkForm />
                     <ArtworkList />
+                </div>
+            )}
+
+            {tab === "experiencias" && (
+                <div className={styles.experiencias}>
+                    <AdminExperiences />
                 </div>
             )}
 

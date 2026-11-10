@@ -26,15 +26,17 @@ const loadBitmap = (source: Blob): Promise<HTMLImageElement> =>
     });
 
 /**
- * Downscale to a WebP blob. Returns null if the browser can't produce WebP, so
- * callers can fall back to storing only the original rather than failing the save.
+ * Downscale to a WebP blob whose long edge is at most `edge` px. Returns null
+ * if the browser can't produce WebP, so callers can fall back to storing only
+ * the original rather than failing the save.
  */
-export const makeThumbnailBlob = async (
-    source: Blob
+export const makeResizedWebp = async (
+    source: Blob,
+    edge: number
 ): Promise<Blob | null> => {
     const img = await loadBitmap(source);
 
-    const scale = Math.min(1, THUMB_EDGE / Math.max(img.width, img.height));
+    const scale = Math.min(1, edge / Math.max(img.width, img.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(img.width * scale);
     canvas.height = Math.round(img.height * scale);
@@ -48,30 +50,46 @@ export const makeThumbnailBlob = async (
     );
 };
 
+export const makeThumbnailBlob = (source: Blob): Promise<Blob | null> =>
+    makeResizedWebp(source, THUMB_EDGE);
+
 /**
- * Generate and upload a thumbnail beside the original, returning its download
- * URL. Never throws — a thumbnail is an optimisation, and the storefront falls
- * back to the full-size `url` when `thumbUrl` is absent.
+ * Generate a downscaled WebP and upload it to `path`, returning its download
+ * URL. Never throws — a resized copy is an optimisation, and every reader
+ * falls back to the original when it is absent.
  */
-export const uploadThumbnail = async (
+export const uploadResizedWebp = async (
     source: Blob,
-    fileName: string
+    path: string,
+    edge: number
 ): Promise<string | undefined> => {
     try {
-        const blob = await makeThumbnailBlob(source);
+        const blob = await makeResizedWebp(source, edge);
         if (!blob) return undefined;
 
-        const thumbRef = ref(
-            storage,
-            `/${folder()}/thumbs/${toWebpName(fileName)}`
-        );
-        await uploadBytes(thumbRef, blob, { contentType: "image/webp" });
-        return await getDownloadURL(thumbRef);
+        const webpRef = ref(storage, path);
+        await uploadBytes(webpRef, blob, { contentType: "image/webp" });
+        return await getDownloadURL(webpRef);
     } catch (error) {
         console.error("No se pudo generar la miniatura:", error);
         return undefined;
     }
 };
+
+/**
+ * Generate and upload a thumbnail beside the original, returning its download
+ * URL. Never throws — the storefront falls back to the full-size `url` when
+ * `thumbUrl` is absent.
+ */
+export const uploadThumbnail = (
+    source: Blob,
+    fileName: string
+): Promise<string | undefined> =>
+    uploadResizedWebp(
+        source,
+        `/${folder()}/thumbs/${toWebpName(fileName)}`,
+        THUMB_EDGE
+    );
 
 /**
  * Storage path for an artwork's thumbnail, derived from the original's download

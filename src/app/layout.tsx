@@ -1,25 +1,41 @@
 import type { Metadata } from "next";
-import { Archivo, Newsreader, Petit_Formal_Script } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+/*
+ * Self-hosted (OFL-1.1 files from Fontsource 5.3.0, latin subset, licences
+ * alongside in ./fonts). next/font/google downloads the fonts during
+ * `next build`, and Google intermittently answered with URLs Next's loader
+ * can't parse, failing Vercel builds at random.
+ */
+const archivo = localFont({
+  src: [
+    { path: "./fonts/archivo-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/archivo-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/archivo-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/archivo-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-archivo",
   display: "swap",
+  adjustFontFallback: "Arial",
 });
 
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
+const newsreader = localFont({
+  src: [
+    { path: "./fonts/newsreader-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/newsreader-latin-400-italic.woff2", weight: "400", style: "italic" },
+    { path: "./fonts/newsreader-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/newsreader-latin-500-italic.woff2", weight: "500", style: "italic" },
+  ],
   variable: "--font-newsreader",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
 
-const petitFormalScript = Petit_Formal_Script({
-  subsets: ["latin"],
+const petitFormalScript = localFont({
+  src: "./fonts/petit-formal-script-latin-400-normal.woff2",
   weight: "400",
+  style: "normal",
   variable: "--font-script-face",
   display: "swap",
 });

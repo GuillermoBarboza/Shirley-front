@@ -1,0 +1,87 @@
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+}
+
+.title {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0 0 8px;
+}
+
+.note {
+    font: 400 13px var(--font-ui);
+    color: var(--ink-50);
+    margin: 0 0 24px;
+    line-height: 1.6;
+}
+
+.label {
+    font: 500 12px var(--font-ui);
+    color: var(--ink-60);
+    margin-bottom: 6px;
+}
+
+.current {
+    font: 600 16px var(--font-ui);
+    margin-bottom: 22px;
+}
+
+.field {
+    margin-bottom: 16px;
+}
+
+.saved {
+    margin-top: 14px;
+    font: 500 13px var(--font-ui);
+    color: var(--ok-ink);
+}
+
+@media (max-width: 640px) {
+    .panel {
+        padding: 24px 20px;
+    }
+}
+
+.panelGap {
+    margin-top: 24px;
+}
+
+.switchRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.switchLabel {
+    font: 600 15px var(--font-ui);
+}
+
+.switch {
+    min-width: 132px;
+    padding: 10px 16px;
+    background: transparent;
+    font: 600 11px var(--font-ui);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.switch:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.switchOn {
+    border: 1px solid var(--olive);
+    color: var(--olive);
+}
+
+.switchOff {
+    border: 1px solid var(--border);
+    color: var(--ink-50);
+}

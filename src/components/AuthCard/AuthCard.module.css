@@ -1,0 +1,59 @@
+.screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: var(--surface);
+}
+
+.card {
+    width: 380px;
+    max-width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    box-sizing: border-box;
+}
+
+.brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.wordmark {
+    font-family: var(--font-script);
+    font-size: 24px;
+    color: var(--ink);
+}
+
+.kicker {
+    font: 600 11px var(--font-ui);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-50);
+    margin-top: 6px;
+}
+
+.heading {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0 0 8px;
+    color: var(--ink);
+}
+
+.centered {
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .screen {
+        padding: 20px;
+    }
+
+    .card {
+        padding: 32px 24px;
+    }
+}

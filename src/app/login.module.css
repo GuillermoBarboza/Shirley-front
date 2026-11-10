@@ -1,0 +1,21 @@
+.field {
+    margin-bottom: 18px;
+}
+
+.forgotRow {
+    text-align: right;
+    margin: 10px 0 20px;
+}
+
+.forgotLink {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: 500 12px var(--font-ui);
+    color: var(--gold-deep);
+}
+
+.forgotLink:hover {
+    color: var(--terracotta);
+}

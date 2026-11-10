@@ -1,0 +1,175 @@
+.loading {
+    padding: 48px 0;
+    text-align: center;
+    font-family: var(--font-editorial);
+    font-style: italic;
+    color: var(--gold-deep);
+}
+
+.panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-bottom: 36px;
+}
+
+.panelTitle,
+.listTitle {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0 0 16px;
+}
+
+.field {
+    margin-bottom: 16px;
+}
+
+.saved {
+    margin-top: 14px;
+    font: 500 13px var(--font-ui);
+    color: var(--ok-ink);
+}
+
+.listHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.listTitle {
+    margin: 0;
+}
+
+.empty {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    font: 400 14px var(--font-ui);
+    color: var(--ink-50);
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.thumb {
+    width: 72px;
+    height: 54px;
+    flex: none;
+    object-fit: cover;
+    display: block;
+}
+
+.thumbOlive {
+    background: var(--olive-tint);
+}
+
+.thumbGold {
+    background: var(--gold-tint);
+}
+
+.text {
+    min-width: 0;
+}
+
+.title {
+    font-family: var(--font-editorial);
+    font-size: 18px;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.meta {
+    font: 400 12px var(--font-ui);
+    color: var(--ink-50);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+}
+
+.arrow {
+    padding: 8px 10px;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.pill {
+    background: transparent;
+    padding: 8px 12px;
+    font: 600 10px var(--font-ui);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    min-width: 76px;
+}
+
+.pill:disabled,
+.arrow:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.pillOn {
+    border: 1px solid var(--olive);
+    color: var(--olive);
+}
+
+.pillOff {
+    border: 1px solid var(--border);
+    color: var(--ink-45);
+}
+
+@media (max-width: 640px) {
+    .panel {
+        padding: 24px 20px;
+    }
+
+    .listHeader {
+        flex-wrap: wrap;
+    }
+
+    .row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+    }
+}
